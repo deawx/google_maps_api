@@ -1,0 +1,213 @@
+<!-- This is the corresponding "starter code" for 04_Hello Map in Udacity and Google's Maps
+API Course, Lesson 1 -->
+<html>
+ <head>
+ <!-- styles put here, but you can include a CSS file and reference it instead! -->
+   <style type="text/css">
+      html,
+      body {
+        font-family: Arial, sans-serif;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        height: 100%;
+        position: relative;
+      }
+
+      input {
+        font-size: 12px;
+      }
+
+      h1 {
+        color: #525454;
+        font-size: 22px;
+        margin: 0 0 10px 0;
+        text-align: center;
+      }
+
+      #hide-listings,
+      #show-listings {
+        width: 48%;
+      }
+
+      #map {
+        bottom:0px;
+        height: 100%;
+        left: 362px;
+        position: absolute;
+        right: 0px;
+      }
+
+      .options-box {
+        background: #fff;
+        border: 1px solid #999;
+        border-radius: 3px;
+        height: 100%;
+        line-height: 35px;
+        padding: 10px 10px 30px 10px;
+        text-align: left;
+        width: 340px;
+      }
+   </style>
+ </head>
+ <body>
+
+
+
+<div class="container">
+  <div class="options-box">
+    <h1>Find your new nyc home</h1>
+    <div>
+      <input id="show-listings" type="button" value="Show Listings">
+      <input id="hide-listings" type="button" value="Hide Listings">
+    </div>
+  </div>
+</div>
+
+
+   <!-- id to load map into -->
+   <div id="map"></div>
+
+   <script>
+     var map;
+
+     var markers = [];
+
+     function initMap() {
+      // create styles array to use with map
+      var styles = [
+        {
+          featureType: 'water',
+          stylers: [
+            { color: '#19a0d8'}
+          ]
+        },{
+          featureType: 'administrative',
+          elementType: 'labels.text.stroke',
+          stylers: [
+            { color: '#ffffff' },
+            { weight: 6 }
+          ]
+        },{
+          featureType: 'administrative',
+          elementType: 'labels.text.fill',
+          stylers: [
+            {color: 'red'}
+          ]
+        }
+      ]
+
+
+
+
+       map = new google.maps.Map(document.getElementById('map'),
+       {
+        center: {lat: 40.7413549, lng: -73.9980244},
+        zoom: 13,
+        styles: styles,
+        mapTypeControl: false
+       });
+       var locations = [
+          {title: 'Park Ave Penthouse', location: {lat: 40.7713024, lng: -73.9632393}},
+          {title: 'Chelsea Loft', location: {lat: 40.7444883, lng: -73.9949465}},
+          {title: 'Union Square Open Floor Plan', location: {lat: 40.7347062, lng: -73.9895759}},
+          {title: 'East Village Hip Studio', location: {lat: 40.7281777, lng: -73.984377}},
+          {title: 'TriBeCa Artsy Bachelor Pad', location: {lat: 40.7195264, lng: -74.0089934}},
+          {title: 'Chinatown Homey Space', location: {lat: 40.7180628, lng: -73.9961237}}
+        ];
+
+        var largeInfowindow = new google.maps.InfoWindow();
+
+        // style marker
+        var defaultIcon = makeMarkerIcon('red');
+
+        // highlit marker
+        var highlightedIcon = makeMarkerIcon('black')
+
+        // get current position of map
+        var bounds = new google.maps.LatLngBounds();
+
+        for (var i = 0; i < locations.length; i++) {
+            // Get the position from the location array.
+            var position = locations[i].location;
+            var title = locations[i].title;
+            // Create a marker per location, and put into markers array.
+            var marker = new google.maps.Marker({
+              position: position,
+              title: title,
+              icon: defaultIcon,
+              animation: google.maps.Animation.DROP,
+              id: i
+            });
+            // Push the marker to our array of markers.
+            markers.push(marker);
+            // Create an onclick event to open an infowindow at each marker.
+            marker.addListener('click', function() {
+              populateInfoWindow(this, largeInfowindow);
+            });
+
+
+            marker.addListener('mouseover', function() {
+            this.setIcon(highlightedIcon);
+          });
+          marker.addListener('mouseout', function() {
+            this.setIcon(defaultIcon);
+          });
+          }
+
+          document.getElementById('show-listings').addEventListener('click', showListings);
+          document.getElementById('hide-listings').
+          addEventListener('click', hideListings)
+
+          function populateInfoWindow(marker, infowindow) {
+            // Check to make sure the infowindow is not already opened on this marker.
+            if (infowindow.marker != marker) {
+              infowindow.marker = marker;
+              infowindow.setContent('<div>' + marker.title + '</div>');
+              infowindow.open(map, marker);
+              // Make sure the marker property is cleared if the infowindow is closed.
+              infowindow.addListener('closeclick',function(){
+                infowindow.setMarker = null;
+              });
+            }
+          }
+
+          // loop thru array and display all listings
+          function showListings() {
+            // gets current map boundaries
+            var bounds = new google.maps.LatLngBounds();
+            // extend boudaries of map for each marker and display
+            for (var i = 0; i < markers.length; i++) {
+              markers[i].setMap(map);
+              bounds.extend(markers[i].position);
+            }
+            map.fitBounds(bounds);
+          }
+
+          // loop thru all listings and hide them all
+          function hideListings() {
+            for (var i = 0; i < markers.length; i++) {
+              markers[i].setMap(null);
+            }
+          }
+
+          function makeMarkerIcon(markerColor) {
+            var markerImage = new google.maps.MarkerImage(
+              'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+              '|40|_|%E2%80%A2',
+              new google.maps.Size(21, 34),
+              new google.maps.Point(0, 0),
+              new google.maps.Point(10, 34),
+              new google.maps.Size(21,34));
+            return markerImage;
+          }
+
+}
+   </script>
+   <script async defer src="https://maps.googleapis.com/maps/api/js?key=removed_api_key_to_show_online_&v=3&callback=initMap">
+   </script>
+ </body>
+</html>
